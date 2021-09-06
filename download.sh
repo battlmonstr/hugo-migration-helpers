@@ -1,13 +1,14 @@
 #!/bin/bash
 
 hugoRepoUrl="https://github.com/gohugoio/hugo"
-git clone "$hugoRepoUrl"
+#git clone "$hugoRepoUrl"
 
 mkdir releases
 mkdir downloads
 cd downloads
 
-git -C ../hugo tag | while read tag
+#git -C ../hugo tag | while read tag
+for tag in v0.54.0 v0.80.0
 do
 	tag=${tag:1}
 	url="$hugoRepoUrl/releases/download/v${tag}/hugo_${tag}_macOS-64bit.tar.gz"
