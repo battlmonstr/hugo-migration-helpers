@@ -1,17 +1,37 @@
 #!/bin/bash
 
-hugoRepoUrl="https://github.com/gohugoio/hugo"
-git clone "$hugoRepoUrl"
+# download all hugo binaries
+# $1 - version filter regex
 
-mkdir releases
-mkdir downloads
+set -e
+
+tagFilterRegex="$1"
+hugoRepoUrl="https://github.com/gohugoio/hugo"
+
+if [[ ! -d hugo ]]
+then
+	git clone "$hugoRepoUrl"
+fi
+
+mkdir -p releases
+mkdir -p downloads
 cd downloads
 
-git -C ../hugo tag | while read tag
+git -C ../hugo tag | grep "$tagFilterRegex" | while read tag
 do
 	tag=${tag:1}
-	url="$hugoRepoUrl/releases/download/v${tag}/hugo_${tag}_macOS-64bit.tar.gz"
 	archive=$tag.tgz
+
+	# until v0.101.0 except v0.89.0
+	# platform=macOS-64bit
+	# v0.89.0
+	# platform=macOS-all
+	# from v0.102.0 to v0.102.3
+	# platform=macOS-universal
+	# from v0.103.0
+	platform=darwin-universal
+
+	url="$hugoRepoUrl/releases/download/v${tag}/hugo_${tag}_${platform}.tar.gz"
 
 	if [[ ! -f $archive ]]
 	then
@@ -19,13 +39,14 @@ do
 		curl -L "$url" -o $archive
 	fi
 
-	if [[ -f $archive ]]
+	dir=../releases/$tag
+	if [[ $dir != *.[0-9] ]]
 	then
-		dir=../releases/$tag
-		if [[ $dir != *.[0-9] ]]
-		then
-			dir="$dir.0"
-		fi
+		dir="$dir.0"
+	fi
+
+	if [[ -f $archive ]] && [[ ! -d $dir ]]
+	then
 
 		mkdir $dir
 		tar xzf $archive -C $dir/ hugo
